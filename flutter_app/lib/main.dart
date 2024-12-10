@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/startpage.dart';
+import 'package:flutter_app/database/database.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,6 +31,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  late AppDatabase db; // データベースを定義
+
+  @override
+  void initState() {
+    super.initState();
+    db = AppDatabase(); // データベース初期化
+  }
+
+  @override
+  void dispose() {
+    db.close(); // データベース接続を閉じる
+    super.dispose();
+  }
+
   int _counter = 0;
 
   void _incrementCounter() {
@@ -37,7 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +68,6 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 Text("data"),
                 Text("data"),
-
               ],
             ),
             const Text(
