@@ -1,11 +1,13 @@
 import 'dart:io';
 
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-import 'package:sqlite3/sqlite3.dart';
-import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+// import 'package:sqlite3/sqlite3.dart';
+// import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
 import 'package:drift/drift.dart';
+import 'package:tuple/tuple.dart';
 
 // import 'table.dart';
 import 'package:flutter_app/database/table.dart';
@@ -14,7 +16,18 @@ part 'database.g.dart';
 
 @DriftDatabase(tables: [Users, Subjects, Categories, Containers, Contents])
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  //シングルトンインスタンスを維持する静的な変数
+  static AppDatabase? _instance;
+
+  //privateなコンストラクタ
+  AppDatabase._() : super(_openConnection());
+
+  // factoryコンストラクタでインスタンスを取得
+  factory AppDatabase() {
+    // まだインスタンスが作成されていない場合のみ新たに作成
+    _instance ??= AppDatabase._();
+    return _instance!;
+  }
 
   //スキーマバージョン
   @override
@@ -24,6 +37,13 @@ class AppDatabase extends _$AppDatabase {
   Future<void> clearAllTables() async {
     await batch((batch) {
       batch.deleteWhere(users, (row) => Constant(true)); // Usersテーブルの全データ削除
+      batch.deleteWhere(subjects, (row) => Constant(true)); // Usersテーブルの全データ削除
+      batch.deleteWhere(
+          categories, (row) => Constant(true)); // Usersテーブルの全データ削除
+      batch.deleteWhere(
+          containers, (row) => Constant(true)); // Usersテーブルの全データ削除
+      batch.deleteWhere(contents, (row) => Constant(true)); // Usersテーブルの全データ削除
+      debugPrint('消した');
       // 他のテーブルがあれば同様に追加
     });
   }
@@ -357,7 +377,41 @@ class AppDatabase extends _$AppDatabase {
         .write(ContentsCompanion(contentId: Value(newContentId)));
   }
 
-// containerIdの取得
+// 結合
+  Future<List<Tuple4<Subject, Category, Container, Content>>>
+      fetchAllData() async {
+    final query = select(subjects).join(
+      [
+        // Categories を Subjects に結合
+        innerJoin(
+          categories,
+          categories.subjectId.equalsExp(subjects.subjectId),
+        ),
+        // Containers を Categories に結合
+        innerJoin(
+          containers,
+          containers.categoryName.equalsExp(categories.categoryName),
+        ),
+        // Contents を Containers に結合
+        innerJoin(
+          contents,
+          contents.containerId.equalsExp(containers.containerId),
+        ),
+      ],
+    );
+
+    // クエリ結果をマッピングして返す
+    final result = await query.map((row) {
+      return Tuple4(
+        row.readTable(subjects), // Subjects テーブルのデータ
+        row.readTable(categories), // Categories テーブルのデータ
+        row.readTable(containers), // Containers テーブルのデータ
+        row.readTable(contents), // Contents テーブルのデータ
+      );
+    }).get();
+
+    return result;
+  }
 }
 
 LazyDatabase _openConnection() {
