@@ -22,24 +22,24 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       const VerificationMeta('studentId');
   @override
   late final GeneratedColumn<int> studentId = GeneratedColumn<int>(
-      'student_id', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      'student_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _passwordMeta =
       const VerificationMeta('password');
   @override
   late final GeneratedColumn<String> password = GeneratedColumn<String>(
-      'password', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'password', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _yearMeta = const VerificationMeta('year');
   @override
   late final GeneratedColumn<int> year = GeneratedColumn<int>(
-      'year', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      'year', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _periodMeta = const VerificationMeta('period');
   @override
   late final GeneratedColumn<int> period = GeneratedColumn<int>(
-      'period', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      'period', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
       [usersNum, studentId, password, year, period];
@@ -60,26 +60,18 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
     if (data.containsKey('student_id')) {
       context.handle(_studentIdMeta,
           studentId.isAcceptableOrUnknown(data['student_id']!, _studentIdMeta));
-    } else if (isInserting) {
-      context.missing(_studentIdMeta);
     }
     if (data.containsKey('password')) {
       context.handle(_passwordMeta,
           password.isAcceptableOrUnknown(data['password']!, _passwordMeta));
-    } else if (isInserting) {
-      context.missing(_passwordMeta);
     }
     if (data.containsKey('year')) {
       context.handle(
           _yearMeta, year.isAcceptableOrUnknown(data['year']!, _yearMeta));
-    } else if (isInserting) {
-      context.missing(_yearMeta);
     }
     if (data.containsKey('period')) {
       context.handle(_periodMeta,
           period.isAcceptableOrUnknown(data['period']!, _periodMeta));
-    } else if (isInserting) {
-      context.missing(_periodMeta);
     }
     return context;
   }
@@ -93,13 +85,13 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       usersNum: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}users_num'])!,
       studentId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}student_id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}student_id']),
       password: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}password'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}password']),
       year: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}year'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}year']),
       period: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}period'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}period']),
     );
   }
 
@@ -111,34 +103,47 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
 
 class User extends DataClass implements Insertable<User> {
   final int usersNum;
-  final int studentId;
-  final String password;
-  final int year;
-  final int period;
+  final int? studentId;
+  final String? password;
+  final int? year;
+  final int? period;
   const User(
       {required this.usersNum,
-      required this.studentId,
-      required this.password,
-      required this.year,
-      required this.period});
+      this.studentId,
+      this.password,
+      this.year,
+      this.period});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['users_num'] = Variable<int>(usersNum);
-    map['student_id'] = Variable<int>(studentId);
-    map['password'] = Variable<String>(password);
-    map['year'] = Variable<int>(year);
-    map['period'] = Variable<int>(period);
+    if (!nullToAbsent || studentId != null) {
+      map['student_id'] = Variable<int>(studentId);
+    }
+    if (!nullToAbsent || password != null) {
+      map['password'] = Variable<String>(password);
+    }
+    if (!nullToAbsent || year != null) {
+      map['year'] = Variable<int>(year);
+    }
+    if (!nullToAbsent || period != null) {
+      map['period'] = Variable<int>(period);
+    }
     return map;
   }
 
   UsersCompanion toCompanion(bool nullToAbsent) {
     return UsersCompanion(
       usersNum: Value(usersNum),
-      studentId: Value(studentId),
-      password: Value(password),
-      year: Value(year),
-      period: Value(period),
+      studentId: studentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(studentId),
+      password: password == null && nullToAbsent
+          ? const Value.absent()
+          : Value(password),
+      year: year == null && nullToAbsent ? const Value.absent() : Value(year),
+      period:
+          period == null && nullToAbsent ? const Value.absent() : Value(period),
     );
   }
 
@@ -147,10 +152,10 @@ class User extends DataClass implements Insertable<User> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return User(
       usersNum: serializer.fromJson<int>(json['usersNum']),
-      studentId: serializer.fromJson<int>(json['studentId']),
-      password: serializer.fromJson<String>(json['password']),
-      year: serializer.fromJson<int>(json['year']),
-      period: serializer.fromJson<int>(json['period']),
+      studentId: serializer.fromJson<int?>(json['studentId']),
+      password: serializer.fromJson<String?>(json['password']),
+      year: serializer.fromJson<int?>(json['year']),
+      period: serializer.fromJson<int?>(json['period']),
     );
   }
   @override
@@ -158,25 +163,25 @@ class User extends DataClass implements Insertable<User> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'usersNum': serializer.toJson<int>(usersNum),
-      'studentId': serializer.toJson<int>(studentId),
-      'password': serializer.toJson<String>(password),
-      'year': serializer.toJson<int>(year),
-      'period': serializer.toJson<int>(period),
+      'studentId': serializer.toJson<int?>(studentId),
+      'password': serializer.toJson<String?>(password),
+      'year': serializer.toJson<int?>(year),
+      'period': serializer.toJson<int?>(period),
     };
   }
 
   User copyWith(
           {int? usersNum,
-          int? studentId,
-          String? password,
-          int? year,
-          int? period}) =>
+          Value<int?> studentId = const Value.absent(),
+          Value<String?> password = const Value.absent(),
+          Value<int?> year = const Value.absent(),
+          Value<int?> period = const Value.absent()}) =>
       User(
         usersNum: usersNum ?? this.usersNum,
-        studentId: studentId ?? this.studentId,
-        password: password ?? this.password,
-        year: year ?? this.year,
-        period: period ?? this.period,
+        studentId: studentId.present ? studentId.value : this.studentId,
+        password: password.present ? password.value : this.password,
+        year: year.present ? year.value : this.year,
+        period: period.present ? period.value : this.period,
       );
   User copyWithCompanion(UsersCompanion data) {
     return User(
@@ -215,10 +220,10 @@ class User extends DataClass implements Insertable<User> {
 
 class UsersCompanion extends UpdateCompanion<User> {
   final Value<int> usersNum;
-  final Value<int> studentId;
-  final Value<String> password;
-  final Value<int> year;
-  final Value<int> period;
+  final Value<int?> studentId;
+  final Value<String?> password;
+  final Value<int?> year;
+  final Value<int?> period;
   const UsersCompanion({
     this.usersNum = const Value.absent(),
     this.studentId = const Value.absent(),
@@ -228,14 +233,11 @@ class UsersCompanion extends UpdateCompanion<User> {
   });
   UsersCompanion.insert({
     this.usersNum = const Value.absent(),
-    required int studentId,
-    required String password,
-    required int year,
-    required int period,
-  })  : studentId = Value(studentId),
-        password = Value(password),
-        year = Value(year),
-        period = Value(period);
+    this.studentId = const Value.absent(),
+    this.password = const Value.absent(),
+    this.year = const Value.absent(),
+    this.period = const Value.absent(),
+  });
   static Insertable<User> custom({
     Expression<int>? usersNum,
     Expression<int>? studentId,
@@ -254,10 +256,10 @@ class UsersCompanion extends UpdateCompanion<User> {
 
   UsersCompanion copyWith(
       {Value<int>? usersNum,
-      Value<int>? studentId,
-      Value<String>? password,
-      Value<int>? year,
-      Value<int>? period}) {
+      Value<int?>? studentId,
+      Value<String?>? password,
+      Value<int?>? year,
+      Value<int?>? period}) {
     return UsersCompanion(
       usersNum: usersNum ?? this.usersNum,
       studentId: studentId ?? this.studentId,
@@ -320,25 +322,25 @@ class $SubjectsTable extends Subjects with TableInfo<$SubjectsTable, Subject> {
       const VerificationMeta('subjectId');
   @override
   late final GeneratedColumn<int> subjectId = GeneratedColumn<int>(
-      'subject_id', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      'subject_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _subjectNameMeta =
       const VerificationMeta('subjectName');
   @override
   late final GeneratedColumn<String> subjectName = GeneratedColumn<String>(
-      'subject_name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'subject_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _dayOfweekMeta =
       const VerificationMeta('dayOfweek');
   @override
   late final GeneratedColumn<int> dayOfweek = GeneratedColumn<int>(
-      'day_ofweek', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      'day_ofweek', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _periodMeta = const VerificationMeta('period');
   @override
   late final GeneratedColumn<int> period = GeneratedColumn<int>(
-      'period', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      'period', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
       [subjectsNum, subjectId, subjectName, dayOfweek, period];
@@ -361,28 +363,20 @@ class $SubjectsTable extends Subjects with TableInfo<$SubjectsTable, Subject> {
     if (data.containsKey('subject_id')) {
       context.handle(_subjectIdMeta,
           subjectId.isAcceptableOrUnknown(data['subject_id']!, _subjectIdMeta));
-    } else if (isInserting) {
-      context.missing(_subjectIdMeta);
     }
     if (data.containsKey('subject_name')) {
       context.handle(
           _subjectNameMeta,
           subjectName.isAcceptableOrUnknown(
               data['subject_name']!, _subjectNameMeta));
-    } else if (isInserting) {
-      context.missing(_subjectNameMeta);
     }
     if (data.containsKey('day_ofweek')) {
       context.handle(_dayOfweekMeta,
           dayOfweek.isAcceptableOrUnknown(data['day_ofweek']!, _dayOfweekMeta));
-    } else if (isInserting) {
-      context.missing(_dayOfweekMeta);
     }
     if (data.containsKey('period')) {
       context.handle(_periodMeta,
           period.isAcceptableOrUnknown(data['period']!, _periodMeta));
-    } else if (isInserting) {
-      context.missing(_periodMeta);
     }
     return context;
   }
@@ -396,13 +390,13 @@ class $SubjectsTable extends Subjects with TableInfo<$SubjectsTable, Subject> {
       subjectsNum: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}subjects_num'])!,
       subjectId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}subject_id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}subject_id']),
       subjectName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}subject_name'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}subject_name']),
       dayOfweek: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}day_ofweek'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}day_ofweek']),
       period: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}period'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}period']),
     );
   }
 
@@ -414,34 +408,49 @@ class $SubjectsTable extends Subjects with TableInfo<$SubjectsTable, Subject> {
 
 class Subject extends DataClass implements Insertable<Subject> {
   final int subjectsNum;
-  final int subjectId;
-  final String subjectName;
-  final int dayOfweek;
-  final int period;
+  final int? subjectId;
+  final String? subjectName;
+  final int? dayOfweek;
+  final int? period;
   const Subject(
       {required this.subjectsNum,
-      required this.subjectId,
-      required this.subjectName,
-      required this.dayOfweek,
-      required this.period});
+      this.subjectId,
+      this.subjectName,
+      this.dayOfweek,
+      this.period});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['subjects_num'] = Variable<int>(subjectsNum);
-    map['subject_id'] = Variable<int>(subjectId);
-    map['subject_name'] = Variable<String>(subjectName);
-    map['day_ofweek'] = Variable<int>(dayOfweek);
-    map['period'] = Variable<int>(period);
+    if (!nullToAbsent || subjectId != null) {
+      map['subject_id'] = Variable<int>(subjectId);
+    }
+    if (!nullToAbsent || subjectName != null) {
+      map['subject_name'] = Variable<String>(subjectName);
+    }
+    if (!nullToAbsent || dayOfweek != null) {
+      map['day_ofweek'] = Variable<int>(dayOfweek);
+    }
+    if (!nullToAbsent || period != null) {
+      map['period'] = Variable<int>(period);
+    }
     return map;
   }
 
   SubjectsCompanion toCompanion(bool nullToAbsent) {
     return SubjectsCompanion(
       subjectsNum: Value(subjectsNum),
-      subjectId: Value(subjectId),
-      subjectName: Value(subjectName),
-      dayOfweek: Value(dayOfweek),
-      period: Value(period),
+      subjectId: subjectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subjectId),
+      subjectName: subjectName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subjectName),
+      dayOfweek: dayOfweek == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dayOfweek),
+      period:
+          period == null && nullToAbsent ? const Value.absent() : Value(period),
     );
   }
 
@@ -450,10 +459,10 @@ class Subject extends DataClass implements Insertable<Subject> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Subject(
       subjectsNum: serializer.fromJson<int>(json['subjectsNum']),
-      subjectId: serializer.fromJson<int>(json['subjectId']),
-      subjectName: serializer.fromJson<String>(json['subjectName']),
-      dayOfweek: serializer.fromJson<int>(json['dayOfweek']),
-      period: serializer.fromJson<int>(json['period']),
+      subjectId: serializer.fromJson<int?>(json['subjectId']),
+      subjectName: serializer.fromJson<String?>(json['subjectName']),
+      dayOfweek: serializer.fromJson<int?>(json['dayOfweek']),
+      period: serializer.fromJson<int?>(json['period']),
     );
   }
   @override
@@ -461,25 +470,25 @@ class Subject extends DataClass implements Insertable<Subject> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'subjectsNum': serializer.toJson<int>(subjectsNum),
-      'subjectId': serializer.toJson<int>(subjectId),
-      'subjectName': serializer.toJson<String>(subjectName),
-      'dayOfweek': serializer.toJson<int>(dayOfweek),
-      'period': serializer.toJson<int>(period),
+      'subjectId': serializer.toJson<int?>(subjectId),
+      'subjectName': serializer.toJson<String?>(subjectName),
+      'dayOfweek': serializer.toJson<int?>(dayOfweek),
+      'period': serializer.toJson<int?>(period),
     };
   }
 
   Subject copyWith(
           {int? subjectsNum,
-          int? subjectId,
-          String? subjectName,
-          int? dayOfweek,
-          int? period}) =>
+          Value<int?> subjectId = const Value.absent(),
+          Value<String?> subjectName = const Value.absent(),
+          Value<int?> dayOfweek = const Value.absent(),
+          Value<int?> period = const Value.absent()}) =>
       Subject(
         subjectsNum: subjectsNum ?? this.subjectsNum,
-        subjectId: subjectId ?? this.subjectId,
-        subjectName: subjectName ?? this.subjectName,
-        dayOfweek: dayOfweek ?? this.dayOfweek,
-        period: period ?? this.period,
+        subjectId: subjectId.present ? subjectId.value : this.subjectId,
+        subjectName: subjectName.present ? subjectName.value : this.subjectName,
+        dayOfweek: dayOfweek.present ? dayOfweek.value : this.dayOfweek,
+        period: period.present ? period.value : this.period,
       );
   Subject copyWithCompanion(SubjectsCompanion data) {
     return Subject(
@@ -521,10 +530,10 @@ class Subject extends DataClass implements Insertable<Subject> {
 
 class SubjectsCompanion extends UpdateCompanion<Subject> {
   final Value<int> subjectsNum;
-  final Value<int> subjectId;
-  final Value<String> subjectName;
-  final Value<int> dayOfweek;
-  final Value<int> period;
+  final Value<int?> subjectId;
+  final Value<String?> subjectName;
+  final Value<int?> dayOfweek;
+  final Value<int?> period;
   const SubjectsCompanion({
     this.subjectsNum = const Value.absent(),
     this.subjectId = const Value.absent(),
@@ -534,14 +543,11 @@ class SubjectsCompanion extends UpdateCompanion<Subject> {
   });
   SubjectsCompanion.insert({
     this.subjectsNum = const Value.absent(),
-    required int subjectId,
-    required String subjectName,
-    required int dayOfweek,
-    required int period,
-  })  : subjectId = Value(subjectId),
-        subjectName = Value(subjectName),
-        dayOfweek = Value(dayOfweek),
-        period = Value(period);
+    this.subjectId = const Value.absent(),
+    this.subjectName = const Value.absent(),
+    this.dayOfweek = const Value.absent(),
+    this.period = const Value.absent(),
+  });
   static Insertable<Subject> custom({
     Expression<int>? subjectsNum,
     Expression<int>? subjectId,
@@ -560,10 +566,10 @@ class SubjectsCompanion extends UpdateCompanion<Subject> {
 
   SubjectsCompanion copyWith(
       {Value<int>? subjectsNum,
-      Value<int>? subjectId,
-      Value<String>? subjectName,
-      Value<int>? dayOfweek,
-      Value<int>? period}) {
+      Value<int?>? subjectId,
+      Value<String?>? subjectName,
+      Value<int?>? dayOfweek,
+      Value<int?>? period}) {
     return SubjectsCompanion(
       subjectsNum: subjectsNum ?? this.subjectsNum,
       subjectId: subjectId ?? this.subjectId,
@@ -627,10 +633,17 @@ class $CategoriesTable extends Categories
       const VerificationMeta('categoryName');
   @override
   late final GeneratedColumn<String> categoryName = GeneratedColumn<String>(
-      'category_name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'category_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _subjectIdMeta =
+      const VerificationMeta('subjectId');
   @override
-  List<GeneratedColumn> get $columns => [categoriesNum, categoryName];
+  late final GeneratedColumn<int> subjectId = GeneratedColumn<int>(
+      'subject_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [categoriesNum, categoryName, subjectId];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -652,8 +665,10 @@ class $CategoriesTable extends Categories
           _categoryNameMeta,
           categoryName.isAcceptableOrUnknown(
               data['category_name']!, _categoryNameMeta));
-    } else if (isInserting) {
-      context.missing(_categoryNameMeta);
+    }
+    if (data.containsKey('subject_id')) {
+      context.handle(_subjectIdMeta,
+          subjectId.isAcceptableOrUnknown(data['subject_id']!, _subjectIdMeta));
     }
     return context;
   }
@@ -667,7 +682,9 @@ class $CategoriesTable extends Categories
       categoriesNum: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}categories_num'])!,
       categoryName: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}category_name'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}category_name']),
+      subjectId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}subject_id']),
     );
   }
 
@@ -679,20 +696,32 @@ class $CategoriesTable extends Categories
 
 class Category extends DataClass implements Insertable<Category> {
   final int categoriesNum;
-  final String categoryName;
-  const Category({required this.categoriesNum, required this.categoryName});
+  final String? categoryName;
+  final int? subjectId;
+  const Category(
+      {required this.categoriesNum, this.categoryName, this.subjectId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['categories_num'] = Variable<int>(categoriesNum);
-    map['category_name'] = Variable<String>(categoryName);
+    if (!nullToAbsent || categoryName != null) {
+      map['category_name'] = Variable<String>(categoryName);
+    }
+    if (!nullToAbsent || subjectId != null) {
+      map['subject_id'] = Variable<int>(subjectId);
+    }
     return map;
   }
 
   CategoriesCompanion toCompanion(bool nullToAbsent) {
     return CategoriesCompanion(
       categoriesNum: Value(categoriesNum),
-      categoryName: Value(categoryName),
+      categoryName: categoryName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryName),
+      subjectId: subjectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subjectId),
     );
   }
 
@@ -701,7 +730,8 @@ class Category extends DataClass implements Insertable<Category> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Category(
       categoriesNum: serializer.fromJson<int>(json['categoriesNum']),
-      categoryName: serializer.fromJson<String>(json['categoryName']),
+      categoryName: serializer.fromJson<String?>(json['categoryName']),
+      subjectId: serializer.fromJson<int?>(json['subjectId']),
     );
   }
   @override
@@ -709,13 +739,20 @@ class Category extends DataClass implements Insertable<Category> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'categoriesNum': serializer.toJson<int>(categoriesNum),
-      'categoryName': serializer.toJson<String>(categoryName),
+      'categoryName': serializer.toJson<String?>(categoryName),
+      'subjectId': serializer.toJson<int?>(subjectId),
     };
   }
 
-  Category copyWith({int? categoriesNum, String? categoryName}) => Category(
+  Category copyWith(
+          {int? categoriesNum,
+          Value<String?> categoryName = const Value.absent(),
+          Value<int?> subjectId = const Value.absent()}) =>
+      Category(
         categoriesNum: categoriesNum ?? this.categoriesNum,
-        categoryName: categoryName ?? this.categoryName,
+        categoryName:
+            categoryName.present ? categoryName.value : this.categoryName,
+        subjectId: subjectId.present ? subjectId.value : this.subjectId,
       );
   Category copyWithCompanion(CategoriesCompanion data) {
     return Category(
@@ -725,6 +762,7 @@ class Category extends DataClass implements Insertable<Category> {
       categoryName: data.categoryName.present
           ? data.categoryName.value
           : this.categoryName,
+      subjectId: data.subjectId.present ? data.subjectId.value : this.subjectId,
     );
   }
 
@@ -732,47 +770,57 @@ class Category extends DataClass implements Insertable<Category> {
   String toString() {
     return (StringBuffer('Category(')
           ..write('categoriesNum: $categoriesNum, ')
-          ..write('categoryName: $categoryName')
+          ..write('categoryName: $categoryName, ')
+          ..write('subjectId: $subjectId')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(categoriesNum, categoryName);
+  int get hashCode => Object.hash(categoriesNum, categoryName, subjectId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.categoriesNum == this.categoriesNum &&
-          other.categoryName == this.categoryName);
+          other.categoryName == this.categoryName &&
+          other.subjectId == this.subjectId);
 }
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> categoriesNum;
-  final Value<String> categoryName;
+  final Value<String?> categoryName;
+  final Value<int?> subjectId;
   const CategoriesCompanion({
     this.categoriesNum = const Value.absent(),
     this.categoryName = const Value.absent(),
+    this.subjectId = const Value.absent(),
   });
   CategoriesCompanion.insert({
     this.categoriesNum = const Value.absent(),
-    required String categoryName,
-  }) : categoryName = Value(categoryName);
+    this.categoryName = const Value.absent(),
+    this.subjectId = const Value.absent(),
+  });
   static Insertable<Category> custom({
     Expression<int>? categoriesNum,
     Expression<String>? categoryName,
+    Expression<int>? subjectId,
   }) {
     return RawValuesInsertable({
       if (categoriesNum != null) 'categories_num': categoriesNum,
       if (categoryName != null) 'category_name': categoryName,
+      if (subjectId != null) 'subject_id': subjectId,
     });
   }
 
   CategoriesCompanion copyWith(
-      {Value<int>? categoriesNum, Value<String>? categoryName}) {
+      {Value<int>? categoriesNum,
+      Value<String?>? categoryName,
+      Value<int?>? subjectId}) {
     return CategoriesCompanion(
       categoriesNum: categoriesNum ?? this.categoriesNum,
       categoryName: categoryName ?? this.categoryName,
+      subjectId: subjectId ?? this.subjectId,
     );
   }
 
@@ -785,6 +833,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     if (categoryName.present) {
       map['category_name'] = Variable<String>(categoryName.value);
     }
+    if (subjectId.present) {
+      map['subject_id'] = Variable<int>(subjectId.value);
+    }
     return map;
   }
 
@@ -792,7 +843,8 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   String toString() {
     return (StringBuffer('CategoriesCompanion(')
           ..write('categoriesNum: $categoriesNum, ')
-          ..write('categoryName: $categoryName')
+          ..write('categoryName: $categoryName, ')
+          ..write('subjectId: $subjectId')
           ..write(')'))
         .toString();
   }
@@ -818,28 +870,34 @@ class $ContainersTable extends Containers
       const VerificationMeta('containerId');
   @override
   late final GeneratedColumn<String> containerId = GeneratedColumn<String>(
-      'container_id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'container_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _subjectIdMeta =
       const VerificationMeta('subjectId');
   @override
   late final GeneratedColumn<int> subjectId = GeneratedColumn<int>(
-      'subject_id', aliasedName, false,
-      type: DriftSqlType.int, requiredDuringInsert: true);
+      'subject_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
-      'title', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'title', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _availableMeta =
       const VerificationMeta('available');
   @override
   late final GeneratedColumn<DateTime> available = GeneratedColumn<DateTime>(
-      'available', aliasedName, false,
-      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+      'available', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _categoryNameMeta =
+      const VerificationMeta('categoryName');
+  @override
+  late final GeneratedColumn<String> categoryName = GeneratedColumn<String>(
+      'category_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
-      [containersNum, containerId, subjectId, title, available];
+      [containersNum, containerId, subjectId, title, available, categoryName];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -861,26 +919,24 @@ class $ContainersTable extends Containers
           _containerIdMeta,
           containerId.isAcceptableOrUnknown(
               data['container_id']!, _containerIdMeta));
-    } else if (isInserting) {
-      context.missing(_containerIdMeta);
     }
     if (data.containsKey('subject_id')) {
       context.handle(_subjectIdMeta,
           subjectId.isAcceptableOrUnknown(data['subject_id']!, _subjectIdMeta));
-    } else if (isInserting) {
-      context.missing(_subjectIdMeta);
     }
     if (data.containsKey('title')) {
       context.handle(
           _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
-    } else if (isInserting) {
-      context.missing(_titleMeta);
     }
     if (data.containsKey('available')) {
       context.handle(_availableMeta,
           available.isAcceptableOrUnknown(data['available']!, _availableMeta));
-    } else if (isInserting) {
-      context.missing(_availableMeta);
+    }
+    if (data.containsKey('category_name')) {
+      context.handle(
+          _categoryNameMeta,
+          categoryName.isAcceptableOrUnknown(
+              data['category_name']!, _categoryNameMeta));
     }
     return context;
   }
@@ -894,13 +950,15 @@ class $ContainersTable extends Containers
       containersNum: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}containers_num'])!,
       containerId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}container_id'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}container_id']),
       subjectId: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}subject_id'])!,
+          .read(DriftSqlType.int, data['${effectivePrefix}subject_id']),
       title: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}title']),
       available: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}available'])!,
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}available']),
+      categoryName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}category_name']),
     );
   }
 
@@ -912,34 +970,57 @@ class $ContainersTable extends Containers
 
 class Container extends DataClass implements Insertable<Container> {
   final int containersNum;
-  final String containerId;
-  final int subjectId;
-  final String title;
-  final DateTime available;
+  final String? containerId;
+  final int? subjectId;
+  final String? title;
+  final DateTime? available;
+  final String? categoryName;
   const Container(
       {required this.containersNum,
-      required this.containerId,
-      required this.subjectId,
-      required this.title,
-      required this.available});
+      this.containerId,
+      this.subjectId,
+      this.title,
+      this.available,
+      this.categoryName});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['containers_num'] = Variable<int>(containersNum);
-    map['container_id'] = Variable<String>(containerId);
-    map['subject_id'] = Variable<int>(subjectId);
-    map['title'] = Variable<String>(title);
-    map['available'] = Variable<DateTime>(available);
+    if (!nullToAbsent || containerId != null) {
+      map['container_id'] = Variable<String>(containerId);
+    }
+    if (!nullToAbsent || subjectId != null) {
+      map['subject_id'] = Variable<int>(subjectId);
+    }
+    if (!nullToAbsent || title != null) {
+      map['title'] = Variable<String>(title);
+    }
+    if (!nullToAbsent || available != null) {
+      map['available'] = Variable<DateTime>(available);
+    }
+    if (!nullToAbsent || categoryName != null) {
+      map['category_name'] = Variable<String>(categoryName);
+    }
     return map;
   }
 
   ContainersCompanion toCompanion(bool nullToAbsent) {
     return ContainersCompanion(
       containersNum: Value(containersNum),
-      containerId: Value(containerId),
-      subjectId: Value(subjectId),
-      title: Value(title),
-      available: Value(available),
+      containerId: containerId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(containerId),
+      subjectId: subjectId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(subjectId),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      available: available == null && nullToAbsent
+          ? const Value.absent()
+          : Value(available),
+      categoryName: categoryName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryName),
     );
   }
 
@@ -948,10 +1029,11 @@ class Container extends DataClass implements Insertable<Container> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Container(
       containersNum: serializer.fromJson<int>(json['containersNum']),
-      containerId: serializer.fromJson<String>(json['containerId']),
-      subjectId: serializer.fromJson<int>(json['subjectId']),
-      title: serializer.fromJson<String>(json['title']),
-      available: serializer.fromJson<DateTime>(json['available']),
+      containerId: serializer.fromJson<String?>(json['containerId']),
+      subjectId: serializer.fromJson<int?>(json['subjectId']),
+      title: serializer.fromJson<String?>(json['title']),
+      available: serializer.fromJson<DateTime?>(json['available']),
+      categoryName: serializer.fromJson<String?>(json['categoryName']),
     );
   }
   @override
@@ -959,25 +1041,29 @@ class Container extends DataClass implements Insertable<Container> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'containersNum': serializer.toJson<int>(containersNum),
-      'containerId': serializer.toJson<String>(containerId),
-      'subjectId': serializer.toJson<int>(subjectId),
-      'title': serializer.toJson<String>(title),
-      'available': serializer.toJson<DateTime>(available),
+      'containerId': serializer.toJson<String?>(containerId),
+      'subjectId': serializer.toJson<int?>(subjectId),
+      'title': serializer.toJson<String?>(title),
+      'available': serializer.toJson<DateTime?>(available),
+      'categoryName': serializer.toJson<String?>(categoryName),
     };
   }
 
   Container copyWith(
           {int? containersNum,
-          String? containerId,
-          int? subjectId,
-          String? title,
-          DateTime? available}) =>
+          Value<String?> containerId = const Value.absent(),
+          Value<int?> subjectId = const Value.absent(),
+          Value<String?> title = const Value.absent(),
+          Value<DateTime?> available = const Value.absent(),
+          Value<String?> categoryName = const Value.absent()}) =>
       Container(
         containersNum: containersNum ?? this.containersNum,
-        containerId: containerId ?? this.containerId,
-        subjectId: subjectId ?? this.subjectId,
-        title: title ?? this.title,
-        available: available ?? this.available,
+        containerId: containerId.present ? containerId.value : this.containerId,
+        subjectId: subjectId.present ? subjectId.value : this.subjectId,
+        title: title.present ? title.value : this.title,
+        available: available.present ? available.value : this.available,
+        categoryName:
+            categoryName.present ? categoryName.value : this.categoryName,
       );
   Container copyWithCompanion(ContainersCompanion data) {
     return Container(
@@ -989,6 +1075,9 @@ class Container extends DataClass implements Insertable<Container> {
       subjectId: data.subjectId.present ? data.subjectId.value : this.subjectId,
       title: data.title.present ? data.title.value : this.title,
       available: data.available.present ? data.available.value : this.available,
+      categoryName: data.categoryName.present
+          ? data.categoryName.value
+          : this.categoryName,
     );
   }
 
@@ -999,14 +1088,15 @@ class Container extends DataClass implements Insertable<Container> {
           ..write('containerId: $containerId, ')
           ..write('subjectId: $subjectId, ')
           ..write('title: $title, ')
-          ..write('available: $available')
+          ..write('available: $available, ')
+          ..write('categoryName: $categoryName')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(containersNum, containerId, subjectId, title, available);
+  int get hashCode => Object.hash(
+      containersNum, containerId, subjectId, title, available, categoryName);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1015,38 +1105,40 @@ class Container extends DataClass implements Insertable<Container> {
           other.containerId == this.containerId &&
           other.subjectId == this.subjectId &&
           other.title == this.title &&
-          other.available == this.available);
+          other.available == this.available &&
+          other.categoryName == this.categoryName);
 }
 
 class ContainersCompanion extends UpdateCompanion<Container> {
   final Value<int> containersNum;
-  final Value<String> containerId;
-  final Value<int> subjectId;
-  final Value<String> title;
-  final Value<DateTime> available;
+  final Value<String?> containerId;
+  final Value<int?> subjectId;
+  final Value<String?> title;
+  final Value<DateTime?> available;
+  final Value<String?> categoryName;
   const ContainersCompanion({
     this.containersNum = const Value.absent(),
     this.containerId = const Value.absent(),
     this.subjectId = const Value.absent(),
     this.title = const Value.absent(),
     this.available = const Value.absent(),
+    this.categoryName = const Value.absent(),
   });
   ContainersCompanion.insert({
     this.containersNum = const Value.absent(),
-    required String containerId,
-    required int subjectId,
-    required String title,
-    required DateTime available,
-  })  : containerId = Value(containerId),
-        subjectId = Value(subjectId),
-        title = Value(title),
-        available = Value(available);
+    this.containerId = const Value.absent(),
+    this.subjectId = const Value.absent(),
+    this.title = const Value.absent(),
+    this.available = const Value.absent(),
+    this.categoryName = const Value.absent(),
+  });
   static Insertable<Container> custom({
     Expression<int>? containersNum,
     Expression<String>? containerId,
     Expression<int>? subjectId,
     Expression<String>? title,
     Expression<DateTime>? available,
+    Expression<String>? categoryName,
   }) {
     return RawValuesInsertable({
       if (containersNum != null) 'containers_num': containersNum,
@@ -1054,21 +1146,24 @@ class ContainersCompanion extends UpdateCompanion<Container> {
       if (subjectId != null) 'subject_id': subjectId,
       if (title != null) 'title': title,
       if (available != null) 'available': available,
+      if (categoryName != null) 'category_name': categoryName,
     });
   }
 
   ContainersCompanion copyWith(
       {Value<int>? containersNum,
-      Value<String>? containerId,
-      Value<int>? subjectId,
-      Value<String>? title,
-      Value<DateTime>? available}) {
+      Value<String?>? containerId,
+      Value<int?>? subjectId,
+      Value<String?>? title,
+      Value<DateTime?>? available,
+      Value<String?>? categoryName}) {
     return ContainersCompanion(
       containersNum: containersNum ?? this.containersNum,
       containerId: containerId ?? this.containerId,
       subjectId: subjectId ?? this.subjectId,
       title: title ?? this.title,
       available: available ?? this.available,
+      categoryName: categoryName ?? this.categoryName,
     );
   }
 
@@ -1090,6 +1185,9 @@ class ContainersCompanion extends UpdateCompanion<Container> {
     if (available.present) {
       map['available'] = Variable<DateTime>(available.value);
     }
+    if (categoryName.present) {
+      map['category_name'] = Variable<String>(categoryName.value);
+    }
     return map;
   }
 
@@ -1100,7 +1198,8 @@ class ContainersCompanion extends UpdateCompanion<Container> {
           ..write('containerId: $containerId, ')
           ..write('subjectId: $subjectId, ')
           ..write('title: $title, ')
-          ..write('available: $available')
+          ..write('available: $available, ')
+          ..write('categoryName: $categoryName')
           ..write(')'))
         .toString();
   }
@@ -1125,25 +1224,25 @@ class $ContentsTable extends Contents with TableInfo<$ContentsTable, Content> {
       const VerificationMeta('contentId');
   @override
   late final GeneratedColumn<String> contentId = GeneratedColumn<String>(
-      'content_id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'content_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _containerIdMeta =
       const VerificationMeta('containerId');
   @override
   late final GeneratedColumn<String> containerId = GeneratedColumn<String>(
-      'container_id', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'container_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _fileMeta = const VerificationMeta('file');
   @override
   late final GeneratedColumn<String> file = GeneratedColumn<String>(
-      'file', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'file', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _contentMeta =
       const VerificationMeta('content');
   @override
   late final GeneratedColumn<String> content = GeneratedColumn<String>(
-      'content', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'content', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
       [contentsNum, contentId, containerId, file, content];
@@ -1166,28 +1265,20 @@ class $ContentsTable extends Contents with TableInfo<$ContentsTable, Content> {
     if (data.containsKey('content_id')) {
       context.handle(_contentIdMeta,
           contentId.isAcceptableOrUnknown(data['content_id']!, _contentIdMeta));
-    } else if (isInserting) {
-      context.missing(_contentIdMeta);
     }
     if (data.containsKey('container_id')) {
       context.handle(
           _containerIdMeta,
           containerId.isAcceptableOrUnknown(
               data['container_id']!, _containerIdMeta));
-    } else if (isInserting) {
-      context.missing(_containerIdMeta);
     }
     if (data.containsKey('file')) {
       context.handle(
           _fileMeta, file.isAcceptableOrUnknown(data['file']!, _fileMeta));
-    } else if (isInserting) {
-      context.missing(_fileMeta);
     }
     if (data.containsKey('content')) {
       context.handle(_contentMeta,
           content.isAcceptableOrUnknown(data['content']!, _contentMeta));
-    } else if (isInserting) {
-      context.missing(_contentMeta);
     }
     return context;
   }
@@ -1201,13 +1292,13 @@ class $ContentsTable extends Contents with TableInfo<$ContentsTable, Content> {
       contentsNum: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}contents_num'])!,
       contentId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content_id'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}content_id']),
       containerId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}container_id'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}container_id']),
       file: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}file'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}file']),
       content: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}content']),
     );
   }
 
@@ -1219,34 +1310,48 @@ class $ContentsTable extends Contents with TableInfo<$ContentsTable, Content> {
 
 class Content extends DataClass implements Insertable<Content> {
   final int contentsNum;
-  final String contentId;
-  final String containerId;
-  final String file;
-  final String content;
+  final String? contentId;
+  final String? containerId;
+  final String? file;
+  final String? content;
   const Content(
       {required this.contentsNum,
-      required this.contentId,
-      required this.containerId,
-      required this.file,
-      required this.content});
+      this.contentId,
+      this.containerId,
+      this.file,
+      this.content});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['contents_num'] = Variable<int>(contentsNum);
-    map['content_id'] = Variable<String>(contentId);
-    map['container_id'] = Variable<String>(containerId);
-    map['file'] = Variable<String>(file);
-    map['content'] = Variable<String>(content);
+    if (!nullToAbsent || contentId != null) {
+      map['content_id'] = Variable<String>(contentId);
+    }
+    if (!nullToAbsent || containerId != null) {
+      map['container_id'] = Variable<String>(containerId);
+    }
+    if (!nullToAbsent || file != null) {
+      map['file'] = Variable<String>(file);
+    }
+    if (!nullToAbsent || content != null) {
+      map['content'] = Variable<String>(content);
+    }
     return map;
   }
 
   ContentsCompanion toCompanion(bool nullToAbsent) {
     return ContentsCompanion(
       contentsNum: Value(contentsNum),
-      contentId: Value(contentId),
-      containerId: Value(containerId),
-      file: Value(file),
-      content: Value(content),
+      contentId: contentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contentId),
+      containerId: containerId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(containerId),
+      file: file == null && nullToAbsent ? const Value.absent() : Value(file),
+      content: content == null && nullToAbsent
+          ? const Value.absent()
+          : Value(content),
     );
   }
 
@@ -1255,10 +1360,10 @@ class Content extends DataClass implements Insertable<Content> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Content(
       contentsNum: serializer.fromJson<int>(json['contentsNum']),
-      contentId: serializer.fromJson<String>(json['contentId']),
-      containerId: serializer.fromJson<String>(json['containerId']),
-      file: serializer.fromJson<String>(json['file']),
-      content: serializer.fromJson<String>(json['content']),
+      contentId: serializer.fromJson<String?>(json['contentId']),
+      containerId: serializer.fromJson<String?>(json['containerId']),
+      file: serializer.fromJson<String?>(json['file']),
+      content: serializer.fromJson<String?>(json['content']),
     );
   }
   @override
@@ -1266,25 +1371,25 @@ class Content extends DataClass implements Insertable<Content> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'contentsNum': serializer.toJson<int>(contentsNum),
-      'contentId': serializer.toJson<String>(contentId),
-      'containerId': serializer.toJson<String>(containerId),
-      'file': serializer.toJson<String>(file),
-      'content': serializer.toJson<String>(content),
+      'contentId': serializer.toJson<String?>(contentId),
+      'containerId': serializer.toJson<String?>(containerId),
+      'file': serializer.toJson<String?>(file),
+      'content': serializer.toJson<String?>(content),
     };
   }
 
   Content copyWith(
           {int? contentsNum,
-          String? contentId,
-          String? containerId,
-          String? file,
-          String? content}) =>
+          Value<String?> contentId = const Value.absent(),
+          Value<String?> containerId = const Value.absent(),
+          Value<String?> file = const Value.absent(),
+          Value<String?> content = const Value.absent()}) =>
       Content(
         contentsNum: contentsNum ?? this.contentsNum,
-        contentId: contentId ?? this.contentId,
-        containerId: containerId ?? this.containerId,
-        file: file ?? this.file,
-        content: content ?? this.content,
+        contentId: contentId.present ? contentId.value : this.contentId,
+        containerId: containerId.present ? containerId.value : this.containerId,
+        file: file.present ? file.value : this.file,
+        content: content.present ? content.value : this.content,
       );
   Content copyWithCompanion(ContentsCompanion data) {
     return Content(
@@ -1326,10 +1431,10 @@ class Content extends DataClass implements Insertable<Content> {
 
 class ContentsCompanion extends UpdateCompanion<Content> {
   final Value<int> contentsNum;
-  final Value<String> contentId;
-  final Value<String> containerId;
-  final Value<String> file;
-  final Value<String> content;
+  final Value<String?> contentId;
+  final Value<String?> containerId;
+  final Value<String?> file;
+  final Value<String?> content;
   const ContentsCompanion({
     this.contentsNum = const Value.absent(),
     this.contentId = const Value.absent(),
@@ -1339,14 +1444,11 @@ class ContentsCompanion extends UpdateCompanion<Content> {
   });
   ContentsCompanion.insert({
     this.contentsNum = const Value.absent(),
-    required String contentId,
-    required String containerId,
-    required String file,
-    required String content,
-  })  : contentId = Value(contentId),
-        containerId = Value(containerId),
-        file = Value(file),
-        content = Value(content);
+    this.contentId = const Value.absent(),
+    this.containerId = const Value.absent(),
+    this.file = const Value.absent(),
+    this.content = const Value.absent(),
+  });
   static Insertable<Content> custom({
     Expression<int>? contentsNum,
     Expression<String>? contentId,
@@ -1365,10 +1467,10 @@ class ContentsCompanion extends UpdateCompanion<Content> {
 
   ContentsCompanion copyWith(
       {Value<int>? contentsNum,
-      Value<String>? contentId,
-      Value<String>? containerId,
-      Value<String>? file,
-      Value<String>? content}) {
+      Value<String?>? contentId,
+      Value<String?>? containerId,
+      Value<String?>? file,
+      Value<String?>? content}) {
     return ContentsCompanion(
       contentsNum: contentsNum ?? this.contentsNum,
       contentId: contentId ?? this.contentId,
@@ -1430,17 +1532,17 @@ abstract class _$AppDatabase extends GeneratedDatabase {
 
 typedef $$UsersTableCreateCompanionBuilder = UsersCompanion Function({
   Value<int> usersNum,
-  required int studentId,
-  required String password,
-  required int year,
-  required int period,
+  Value<int?> studentId,
+  Value<String?> password,
+  Value<int?> year,
+  Value<int?> period,
 });
 typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
   Value<int> usersNum,
-  Value<int> studentId,
-  Value<String> password,
-  Value<int> year,
-  Value<int> period,
+  Value<int?> studentId,
+  Value<String?> password,
+  Value<int?> year,
+  Value<int?> period,
 });
 
 class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
@@ -1541,10 +1643,10 @@ class $$UsersTableTableManager extends RootTableManager<
               $$UsersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> usersNum = const Value.absent(),
-            Value<int> studentId = const Value.absent(),
-            Value<String> password = const Value.absent(),
-            Value<int> year = const Value.absent(),
-            Value<int> period = const Value.absent(),
+            Value<int?> studentId = const Value.absent(),
+            Value<String?> password = const Value.absent(),
+            Value<int?> year = const Value.absent(),
+            Value<int?> period = const Value.absent(),
           }) =>
               UsersCompanion(
             usersNum: usersNum,
@@ -1555,10 +1657,10 @@ class $$UsersTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> usersNum = const Value.absent(),
-            required int studentId,
-            required String password,
-            required int year,
-            required int period,
+            Value<int?> studentId = const Value.absent(),
+            Value<String?> password = const Value.absent(),
+            Value<int?> year = const Value.absent(),
+            Value<int?> period = const Value.absent(),
           }) =>
               UsersCompanion.insert(
             usersNum: usersNum,
@@ -1588,17 +1690,17 @@ typedef $$UsersTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function()>;
 typedef $$SubjectsTableCreateCompanionBuilder = SubjectsCompanion Function({
   Value<int> subjectsNum,
-  required int subjectId,
-  required String subjectName,
-  required int dayOfweek,
-  required int period,
+  Value<int?> subjectId,
+  Value<String?> subjectName,
+  Value<int?> dayOfweek,
+  Value<int?> period,
 });
 typedef $$SubjectsTableUpdateCompanionBuilder = SubjectsCompanion Function({
   Value<int> subjectsNum,
-  Value<int> subjectId,
-  Value<String> subjectName,
-  Value<int> dayOfweek,
-  Value<int> period,
+  Value<int?> subjectId,
+  Value<String?> subjectName,
+  Value<int?> dayOfweek,
+  Value<int?> period,
 });
 
 class $$SubjectsTableFilterComposer
@@ -1700,10 +1802,10 @@ class $$SubjectsTableTableManager extends RootTableManager<
               $$SubjectsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> subjectsNum = const Value.absent(),
-            Value<int> subjectId = const Value.absent(),
-            Value<String> subjectName = const Value.absent(),
-            Value<int> dayOfweek = const Value.absent(),
-            Value<int> period = const Value.absent(),
+            Value<int?> subjectId = const Value.absent(),
+            Value<String?> subjectName = const Value.absent(),
+            Value<int?> dayOfweek = const Value.absent(),
+            Value<int?> period = const Value.absent(),
           }) =>
               SubjectsCompanion(
             subjectsNum: subjectsNum,
@@ -1714,10 +1816,10 @@ class $$SubjectsTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> subjectsNum = const Value.absent(),
-            required int subjectId,
-            required String subjectName,
-            required int dayOfweek,
-            required int period,
+            Value<int?> subjectId = const Value.absent(),
+            Value<String?> subjectName = const Value.absent(),
+            Value<int?> dayOfweek = const Value.absent(),
+            Value<int?> period = const Value.absent(),
           }) =>
               SubjectsCompanion.insert(
             subjectsNum: subjectsNum,
@@ -1747,11 +1849,13 @@ typedef $$SubjectsTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function()>;
 typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
   Value<int> categoriesNum,
-  required String categoryName,
+  Value<String?> categoryName,
+  Value<int?> subjectId,
 });
 typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
   Value<int> categoriesNum,
-  Value<String> categoryName,
+  Value<String?> categoryName,
+  Value<int?> subjectId,
 });
 
 class $$CategoriesTableFilterComposer
@@ -1768,6 +1872,9 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<String> get categoryName => $composableBuilder(
       column: $table.categoryName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get subjectId => $composableBuilder(
+      column: $table.subjectId, builder: (column) => ColumnFilters(column));
 }
 
 class $$CategoriesTableOrderingComposer
@@ -1786,6 +1893,9 @@ class $$CategoriesTableOrderingComposer
   ColumnOrderings<String> get categoryName => $composableBuilder(
       column: $table.categoryName,
       builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get subjectId => $composableBuilder(
+      column: $table.subjectId, builder: (column) => ColumnOrderings(column));
 }
 
 class $$CategoriesTableAnnotationComposer
@@ -1802,6 +1912,9 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<String> get categoryName => $composableBuilder(
       column: $table.categoryName, builder: (column) => column);
+
+  GeneratedColumn<int> get subjectId =>
+      $composableBuilder(column: $table.subjectId, builder: (column) => column);
 }
 
 class $$CategoriesTableTableManager extends RootTableManager<
@@ -1828,19 +1941,23 @@ class $$CategoriesTableTableManager extends RootTableManager<
               $$CategoriesTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> categoriesNum = const Value.absent(),
-            Value<String> categoryName = const Value.absent(),
+            Value<String?> categoryName = const Value.absent(),
+            Value<int?> subjectId = const Value.absent(),
           }) =>
               CategoriesCompanion(
             categoriesNum: categoriesNum,
             categoryName: categoryName,
+            subjectId: subjectId,
           ),
           createCompanionCallback: ({
             Value<int> categoriesNum = const Value.absent(),
-            required String categoryName,
+            Value<String?> categoryName = const Value.absent(),
+            Value<int?> subjectId = const Value.absent(),
           }) =>
               CategoriesCompanion.insert(
             categoriesNum: categoriesNum,
             categoryName: categoryName,
+            subjectId: subjectId,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -1863,17 +1980,19 @@ typedef $$CategoriesTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function()>;
 typedef $$ContainersTableCreateCompanionBuilder = ContainersCompanion Function({
   Value<int> containersNum,
-  required String containerId,
-  required int subjectId,
-  required String title,
-  required DateTime available,
+  Value<String?> containerId,
+  Value<int?> subjectId,
+  Value<String?> title,
+  Value<DateTime?> available,
+  Value<String?> categoryName,
 });
 typedef $$ContainersTableUpdateCompanionBuilder = ContainersCompanion Function({
   Value<int> containersNum,
-  Value<String> containerId,
-  Value<int> subjectId,
-  Value<String> title,
-  Value<DateTime> available,
+  Value<String?> containerId,
+  Value<int?> subjectId,
+  Value<String?> title,
+  Value<DateTime?> available,
+  Value<String?> categoryName,
 });
 
 class $$ContainersTableFilterComposer
@@ -1899,6 +2018,9 @@ class $$ContainersTableFilterComposer
 
   ColumnFilters<DateTime> get available => $composableBuilder(
       column: $table.available, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get categoryName => $composableBuilder(
+      column: $table.categoryName, builder: (column) => ColumnFilters(column));
 }
 
 class $$ContainersTableOrderingComposer
@@ -1925,6 +2047,10 @@ class $$ContainersTableOrderingComposer
 
   ColumnOrderings<DateTime> get available => $composableBuilder(
       column: $table.available, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get categoryName => $composableBuilder(
+      column: $table.categoryName,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$ContainersTableAnnotationComposer
@@ -1950,6 +2076,9 @@ class $$ContainersTableAnnotationComposer
 
   GeneratedColumn<DateTime> get available =>
       $composableBuilder(column: $table.available, builder: (column) => column);
+
+  GeneratedColumn<String> get categoryName => $composableBuilder(
+      column: $table.categoryName, builder: (column) => column);
 }
 
 class $$ContainersTableTableManager extends RootTableManager<
@@ -1976,10 +2105,11 @@ class $$ContainersTableTableManager extends RootTableManager<
               $$ContainersTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> containersNum = const Value.absent(),
-            Value<String> containerId = const Value.absent(),
-            Value<int> subjectId = const Value.absent(),
-            Value<String> title = const Value.absent(),
-            Value<DateTime> available = const Value.absent(),
+            Value<String?> containerId = const Value.absent(),
+            Value<int?> subjectId = const Value.absent(),
+            Value<String?> title = const Value.absent(),
+            Value<DateTime?> available = const Value.absent(),
+            Value<String?> categoryName = const Value.absent(),
           }) =>
               ContainersCompanion(
             containersNum: containersNum,
@@ -1987,13 +2117,15 @@ class $$ContainersTableTableManager extends RootTableManager<
             subjectId: subjectId,
             title: title,
             available: available,
+            categoryName: categoryName,
           ),
           createCompanionCallback: ({
             Value<int> containersNum = const Value.absent(),
-            required String containerId,
-            required int subjectId,
-            required String title,
-            required DateTime available,
+            Value<String?> containerId = const Value.absent(),
+            Value<int?> subjectId = const Value.absent(),
+            Value<String?> title = const Value.absent(),
+            Value<DateTime?> available = const Value.absent(),
+            Value<String?> categoryName = const Value.absent(),
           }) =>
               ContainersCompanion.insert(
             containersNum: containersNum,
@@ -2001,6 +2133,7 @@ class $$ContainersTableTableManager extends RootTableManager<
             subjectId: subjectId,
             title: title,
             available: available,
+            categoryName: categoryName,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -2023,17 +2156,17 @@ typedef $$ContainersTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function()>;
 typedef $$ContentsTableCreateCompanionBuilder = ContentsCompanion Function({
   Value<int> contentsNum,
-  required String contentId,
-  required String containerId,
-  required String file,
-  required String content,
+  Value<String?> contentId,
+  Value<String?> containerId,
+  Value<String?> file,
+  Value<String?> content,
 });
 typedef $$ContentsTableUpdateCompanionBuilder = ContentsCompanion Function({
   Value<int> contentsNum,
-  Value<String> contentId,
-  Value<String> containerId,
-  Value<String> file,
-  Value<String> content,
+  Value<String?> contentId,
+  Value<String?> containerId,
+  Value<String?> file,
+  Value<String?> content,
 });
 
 class $$ContentsTableFilterComposer
@@ -2135,10 +2268,10 @@ class $$ContentsTableTableManager extends RootTableManager<
               $$ContentsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<int> contentsNum = const Value.absent(),
-            Value<String> contentId = const Value.absent(),
-            Value<String> containerId = const Value.absent(),
-            Value<String> file = const Value.absent(),
-            Value<String> content = const Value.absent(),
+            Value<String?> contentId = const Value.absent(),
+            Value<String?> containerId = const Value.absent(),
+            Value<String?> file = const Value.absent(),
+            Value<String?> content = const Value.absent(),
           }) =>
               ContentsCompanion(
             contentsNum: contentsNum,
@@ -2149,10 +2282,10 @@ class $$ContentsTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             Value<int> contentsNum = const Value.absent(),
-            required String contentId,
-            required String containerId,
-            required String file,
-            required String content,
+            Value<String?> contentId = const Value.absent(),
+            Value<String?> containerId = const Value.absent(),
+            Value<String?> file = const Value.absent(),
+            Value<String?> content = const Value.absent(),
           }) =>
               ContentsCompanion.insert(
             contentsNum: contentsNum,
